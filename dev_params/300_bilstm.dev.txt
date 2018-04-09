@@ -1,1 +1,1 @@
-{"sst_fine": {"f1": 0.3578564940962761, "dim": 125, "dropout": 0.2, "epoch": 6}}
+{"sst_fine": {"f1": 0.3578564940962761, "dim": 125, "dropout": 0.2, "epoch": 6}, "sst_binary": {"f1": 0.7781420765027321, "dim": 200, "dropout": 0.5, "epoch": 5}}

@@ -54,7 +54,7 @@ def get_dev_params(dataset_name, outfile, bi,
 
         dim = int(dims[np.random.randint(0, len(dims))])
         dropout = float(dropouts[np.random.randint(0, len(dropouts))])
-        epoch = 6 #DANITER int(epochs[np.random.randint(0, len(epochs))])
+        epoch = 4 #DANITER int(epochs[np.random.randint(0, len(epochs))])
 
         if bi:
             clf = create_BiLSTM(vecs, dim, output_dim, dropout)
@@ -105,10 +105,13 @@ def add_unknown_words(wordvecs, vocab, min_df=1, dim=50):
     0.25 is chosen so the unk vectors have approximately the same variance
     as pretrained ones
     """
+    all_vecs = np.array([v for w,v in wordvecs.items()])
+    mean = np.mean(all_vecs)
+    var = np.std(all_vecs)
     for word in vocab:
         if word not in wordvecs and vocab[word] >= min_df:
-            wordvecs[word] = np.random.uniform(-0.25, 0.25, dim)
-
+            # DANITER changed the mean and std
+            wordvecs[word] = np.random.uniform(mean-var, mean+var, dim)#np.random.uniform(-0.25, 0.25, dim)
 
 def get_W(wordvecs, dim=300):
     """
@@ -123,8 +126,6 @@ def get_W(wordvecs, dim=300):
         W[i] = wordvecs[word]
         word_idx_map[word] = i
         i += 1
-    print("DANITER, show the shape of the word embeddings")
-    print(W.shape)
     return W, word_idx_map
 
 def create_LSTM(wordvecs, lstm_dim=300, output_dim=2, dropout=.5,
@@ -163,7 +164,7 @@ def create_LSTM(wordvecs, lstm_dim=300, output_dim=2, dropout=.5,
 def create_BiLSTM(wordvecs, lstm_dim=300, output_dim=2, dropout=.5,
                 weights=None, train=True):
     model = Sequential()
-    if weights is None:
+    if weights is not None:
         model.add(Embedding(len(wordvecs)+1,
             len(wordvecs['the']),
             weights=[weights],
@@ -233,7 +234,7 @@ def test_embeddings(bi, embedding_file, file_type):
     dim = vecs.vector_size
     lstm_dim=50
     dropout=.3
-    train=True
+    train=False
 
     print('Importing datasets...')
     st_fine = Stanford_Sentiment_Dataset('datasets/stanford_sentanalysis',

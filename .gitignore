@@ -2,3 +2,6 @@
 __pycache__
 embeddings
 models
+.ipynb_checkpoints/
+predictions
+results
