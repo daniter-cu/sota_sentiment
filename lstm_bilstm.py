@@ -282,8 +282,8 @@ def test_embeddings(bi, embedding_file, file_type):
 
 
     for name, dataset in zip(names, datasets):
-        # DANITER: Only do sst_fine
-        if name != names[1]:
+        # DANITER: Only do semeval
+        if name != names[5]:
             continue
 
         print('Testing on {0}...'.format(name))
