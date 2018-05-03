@@ -129,7 +129,7 @@ def get_W(wordvecs, dim=300):
     return W, word_idx_map
 
 def create_LSTM(wordvecs, lstm_dim=300, output_dim=2, dropout=.5,
-                weights=None, train=True):
+                weights=None, train=False): # DANITER: changed train to false
     """
     Create simple one layer lstm
     lstm_dim: dimension of hidden layer
