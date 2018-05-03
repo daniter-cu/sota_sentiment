@@ -4,6 +4,7 @@ import sys
 import keras
 import pathlib
 from collections import Counter
+import time
 from keras.callbacks import ModelCheckpoint
 curdir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(curdir+"/../../")
@@ -15,9 +16,15 @@ from Utils.Semeval_2013_Dataset import *
 import lstm_bilstm
 
 
+
 def parse(docs, lang):
     nlp = spacy.load(lang)
-    ret = [nlp(doc) for doc in docs]
+    start = time.time()
+    nlp(docs[0],disable=['parser', 'tagger', 'ner'])
+    end = time.time()
+    diff = end - start
+    print("Estimated runtime", diff*len(docs))
+    ret = [nlp(doc, disable=['parser', 'tagger', 'ner']) for doc in docs]
     return ret
 
 def train(sentences_train, sentences_test, train_labels, test_labels, lang):
@@ -29,11 +36,14 @@ def train(sentences_train, sentences_test, train_labels, test_labels, lang):
     output_dim = len(Counter(train_labels).keys())
 
     # parse data with spacy
+    print("parsing training data")
     sentences_train_parsed = parse(sentences_train, lang)
+    print("parsing test data")
     sentences_test_parsed = parse(sentences_test, lang)
+    print("Done parsing data")
 
     max_length = 0
-    for sent in sentences_parsed:
+    for sent in sentences_train_parsed:
         max_length = len(sent) if len(sent) > max_length else max_length
         for w in sent:
             if w.text not in vocab:
@@ -61,22 +71,24 @@ def train(sentences_train, sentences_test, train_labels, test_labels, lang):
 
     train_data = []
     for sent in sentences_train_parsed:
-        fr_train_data.append(encode_sent(sent, word_idx_map))
+        train_data.append(encode_sent(sent, word_idx_map))
     train_data = lstm_bilstm.pad_sequences(train_data, max_length)
 
     test_data = []
     for sent in sentences_test_parsed:
-        fr_test_data.append(encode_sent(sent, word_idx_map))
+        test_data.append(encode_sent(sent, word_idx_map))
     test_data = lstm_bilstm.pad_sequences(test_data, max_length)
 
     train_y = keras.utils.to_categorical(train_labels)
     test_y = keras.utils.to_categorical(test_labels)
 
     clf = lstm_bilstm.create_BiLSTM(wordvecs, best_dim, output_dim, best_dropout, weights=W, train=train)
-    pathlib.Path('models/bilstm/' + new_name +'/run').mkdir(parents=True, exist_ok=True)
-    checkpoint = ModelCheckpoint('models/bilstm/' + new_name +'/run/weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+    pathlib.Path('models/bilstm/' + name +'/run').mkdir(parents=True, exist_ok=True)
+    checkpoint = ModelCheckpoint('models/bilstm/' + name +'/run/weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
 
-    hist = clf.fit(train_data, train_y, validation_data=[test_data, test_y],
-                epochs=best_epoch, verbose=1, callbacks=[checkpoint])
-
-    return hist
+    return (train_data, train_y, test_data, test_y, best_epoch, checkpoint, clf)
+    #
+    # hist = clf.fit(train_data, train_y, validation_data=[test_data, test_y],
+    #             epochs=best_epoch, verbose=1, callbacks=[checkpoint])
+    #
+    # return hist
