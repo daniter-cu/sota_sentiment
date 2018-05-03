@@ -86,9 +86,7 @@ def train(sentences_train, sentences_test, train_labels, test_labels, lang):
     pathlib.Path('models/bilstm/' + name +'/run').mkdir(parents=True, exist_ok=True)
     checkpoint = ModelCheckpoint('models/bilstm/' + name +'/run/weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
 
-    return (train_data, train_y, test_data, test_y, best_epoch, checkpoint, clf)
-    #
-    # hist = clf.fit(train_data, train_y, validation_data=[test_data, test_y],
-    #             epochs=best_epoch, verbose=1, callbacks=[checkpoint])
-    #
-    # return hist
+    hist = clf.fit(train_data, train_y, validation_data=[test_data, test_y],
+                epochs=best_epoch, verbose=1, callbacks=[checkpoint])
+
+    return (hist, clf)
