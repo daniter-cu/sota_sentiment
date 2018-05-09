@@ -1,4 +1,5 @@
 from os import listdir
+import os
 import xml.etree.ElementTree as ET
 from collections import Counter
 import numpy as np
@@ -9,7 +10,8 @@ def get_dataset():
     failure = 0
     max_len = 5000
     data = []
-    dataset_root = "../../datasets/sentiment/spanish/CriticaCine/"
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    dataset_root = script_dir + "/../../../datasets/sentiment/spanish/CriticaCine/"
     for filename in listdir(dataset_root):
         sentiment = None
         content = None
